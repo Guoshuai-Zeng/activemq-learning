@@ -4,6 +4,8 @@ import com.example.common.ActiveMQUtil;
 
 import javax.jms.*;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
+
 /**
  * Auto NIO 测试生产者
  * 使用 auto+nio 传输协议

@@ -4,6 +4,8 @@ import com.example.common.ActiveMQUtil;
 
 import javax.jms.*;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
+
 /**
  * Auto NIO 异步消费者
  * 使用消息监听器异步接收消息
