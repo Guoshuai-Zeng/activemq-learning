@@ -339,6 +339,126 @@ MessageConsumer consumer = session.createConsumer(queue, selector);
 - LIKE 模式：`LIKE`
 - IN 检查：`IN`
 
+## 传输协议
+
+ActiveMQ 支持多种传输协议（Transport Protocol），用于客户端和 Broker 之间通信。
+
+### TCP 传输
+
+```
+tcp://127.0.0.1:61616
+```
+
+**特点：**
+- ActiveMQ 默认传输协议
+- 基于 Java Socket（阻塞 I/O）
+- 性能良好
+- 生产环境最常用
+
+### NIO 传输
+
+```
+nio://127.0.0.1:61616
+```
+
+**特点：**
+- 基于 Java NIO（非阻塞 I/O）
+- 单个线程处理多个连接
+- 支持更多并发连接
+- 适合大量客户端连接场景
+
+**使用场景：**
+- 大量客户端连接
+- MQ 网关
+- 高并发环境
+
+### NIO + SSL
+
+```
+nio+ssl://127.0.0.1:61616
+```
+
+**特点：**
+- NIO 传输 + SSL/TLS 加密
+- 安全传输
+- 适合需要加密的场景
+
+### AUTO 传输（自动协议检测）
+
+```
+auto://127.0.0.1:61616
+```
+
+AUTO 是 ActiveMQ 的**自动协议检测**传输协议，可以自动识别客户端使用的协议（OpenWire、STOMP、AMQP、MQTT）。
+
+**支持的传输组合：**
+
+| URI | 协议检测 | 底层传输 | 说明 |
+|-----|----------|----------|------|
+| `auto://localhost:61618` | 自动检测 | TCP | 自动识别 OpenWire、STOMP、AMQP、MQTT |
+| `auto+ssl://localhost:61618` | 自动检测 | TCP + SSL | 自动识别 + SSL 加密 |
+| `auto+nio://localhost:61618` | 自动检测 | **NIO** | 自动识别 + NIO I/O |
+| `auto+nio+ssl://localhost:61618` | 自动检测 | **NIO + SSL** | 自动识别 + NIO + SSL |
+
+**配置示例：**
+
+```xml
+<transportConnectors>
+    <!-- AUTO + NIO -->
+    <transportConnector name="auto+nio"
+        uri="auto+nio://localhost:61618?protocolDetectionTimeOut=10000&maxConnectionThreadPoolSize=500"/>
+
+    <!-- AUTO + NIO + SSL -->
+    <transportConnector name="auto+nio+ssl"
+        uri="auto+nio+ssl://localhost:61619?protocolDetectionTimeOut=10000"/>
+</transportConnectors>
+```
+
+**工作原理：**
+
+```
+客户端连接 ──> AUTO 传输 ──> 协议检测 ──> 路由到对应处理器
+                      ├─> OpenWire
+                      ├─> STOMP
+                      ├─> AMQP
+                      └─> MQTT
+```
+
+**参数说明：**
+
+| 参数 | 说明 |
+|------|------|
+| `protocolDetectionTimeOut` | 协议检测超时时间（ms） |
+| `maxConnectionThreadPoolSize` | 最大连接线程池大小 |
+
+**使用场景：**
+- 需要同时支持多种协议客户端
+- 简化服务器配置，使用统一端口
+- 需要自动协议检测功能
+
+### 其他传输协议
+
+| 协议 | URI | 说明 |
+|------|-----|------|
+| UDP | `udp://` | 基于 UDP，支持多播 |
+| VM | `vm://` | 虚拟机内部通信 |
+| Multicast | `multicast://` | 多播传输 |
+| STOMP | `stomp://` | STOMP 协议 |
+| MQTT | `mqtt://` | MQTT 协议 |
+| AMQP | `amqp://` | AMQP 协议 |
+| WebSocket | `ws://` | WebSocket 协议 |
+
+### 传输协议对比
+
+| 协议 | I/O 模型 | 加密 | 协议检测 | 适用场景 |
+|------|----------|------|----------|----------|
+| `tcp://` | BIO | ❌ | ❌ | 一般场景，少量连接 |
+| `nio://` | NIO | ❌ | ❌ | 高并发，大量连接 |
+| `nio+ssl://` | NIO | ✅ | ❌ | 高并发 + 安全传输 |
+| `auto://` | BIO | ❌ | ✅ | 多协议客户端 |
+| `auto+nio://` | NIO | ❌ | ✅ | 高并发 + 多协议 |
+| `auto+nio+ssl://` | NIO | ✅ | ✅ | 高并发 + 多协议 + 安全 |
+
 ## 下一步
 
 - [快速开始示例](./04-quick-start.md)
