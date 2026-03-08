@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  activemq:
+    image: apache/activemq:5.18.3
+    container_name: activemq
+    ports:
+      - "61616:61616"    # JMS 端口
+      - "8161:8161"      # Web 控制台端口
+      - "5672:5672"      # AMQP 端口
+      - "61613:61613"    # STOMP 端口
+      - "1883:1883"      # MQTT 端口
+    environment:
+      - ACTIVEMQ_ADMIN_LOGIN=admin
+      - ACTIVEMQ_ADMIN_PASSWORD=admin123
+      - ACTIVEMQ_CONFIG_MINIMUMMEMORY=512
+      - ACTIVEMQ_CONFIG_MAXIMUMMEMORY=1024
+    volumes:
+      - ./data/activemq:/data/activemq
+      - ./logs/activemq:/var/log/activemq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8161"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+networks:
+  default:
+    name: activemq-network

@@ -1,0 +1,50 @@
+# ActiveMQ 配置
+spring:
+  activemq:
+    # ActiveMQ Broker URL
+    broker-url: tcp://localhost:61616
+    # 用户名
+    user: admin
+    # 密码
+    password: admin
+    # 是否使用 Pooled 连接池
+    pool:
+      enabled: true
+      max-connections: 10
+      maximum-active-session-per-connection: 500
+      idle-timeout: 30000
+    # 是否信任所有包（用于接收对象消息）
+    packages:
+      trust-all: true
+
+  # JMS 配置
+  jms:
+    # 是否开启 Pub/Sub 模式（默认是 Queue 模式）
+    pub-sub-domain: false
+    # 监听器容器配置
+    listener:
+      # 确认模式
+      acknowledge-mode: client
+      # 并发数量
+      concurrency: 3-10
+
+# 应用配置
+server:
+  port: 8080
+
+# 日志配置
+logging:
+  level:
+    com.example: DEBUG
+    org.apache.activemq: INFO
+
+# 自定义 ActiveMQ 配置
+activemq:
+  # 队列名称
+  queue:
+    default: BOOT_QUEUE
+    order: ORDER_QUEUE
+  # 主题名称
+  topic:
+    default: BOOT_TOPIC
+    notification: NOTIFICATION_TOPIC

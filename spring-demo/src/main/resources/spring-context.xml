@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/jms
+           http://www.springframework.org/schema/jms/spring-jms.xsd">
+
+    <!-- 启用注解配置 -->
+    <context:component-scan base-package="com.example"/>
+
+    <!-- ==================== ActiveMQ 配置 ==================== -->
+
+    <!-- ActiveMQ 连接工厂 -->
+    <bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:61616"/>
+        <property name="userName" value="admin"/>
+        <property name="password" value="admin"/>
+        <property name="trustAllPackages" value="true"/>
+    </bean>
+
+    <!-- Pooled 连接工厂 -->
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
+        <property name="connectionFactory" ref="amqConnectionFactory"/>
+        <property name="maxConnections" value="10"/>
+        <property name="maximumActiveSessionPerConnection" value="500"/>
+        <property name="idleTimeout" value="30000"/>
+    </bean>
+
+    <!-- Spring JMS 连接工厂 -->
+    <bean id="connectionFactory" class="org.springframework.jms.connection.SingleConnectionFactory">
+        <property name="targetConnectionFactory" ref="pooledConnectionFactory"/>
+    </bean>
+
+    <!-- ==================== JMS 模板 ==================== -->
+
+    <!-- JMS 模板 - 用于发送消息 -->
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="defaultDestinationName" value="SPRING_QUEUE"/>
+        <property name="deliveryMode" value="2"/>  <!-- 2 = PERSISTENT -->
+        <property name="sessionTransacted" value="false"/>
+        <property name="deliveryPersistent" value="true"/>
+        <property name="explicitQosEnabled" value="true"/>
+        <property name="timeToLive" value="3600000"/>  <!-- 1小时 -->
+    </bean>
+
+    <!-- ==================== 监听器容器配置 ==================== -->
+
+    <!-- 监听器容器工厂 -->
+    <bean id="jmsListenerContainerFactory"
+          class="org.springframework.jms.config.DefaultJmsListenerContainerFactory">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="concurrency" value="3-10"/>  <!-- 最小3，最大10 -->
+        <property name="sessionTransacted" value="false"/>
+        <property name="sessionAcknowledgeMode" value="1"/>  <!-- 1 = CLIENT_ACKNOWLEDGE -->
+    </bean>
+
+    <!-- 启用 JMS 注解监听器 -->
+    <jms:annotation-driven container-factory="jmsListenerContainerFactory"/>
+
+    <!-- ==================== 消息目的地 ==================== -->
+
+    <!-- 队列 -->
+    <bean id="springQueue" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg value="SPRING_QUEUE"/>
+    </bean>
+
+    <bean id="orderQueue" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg value="ORDER_QUEUE"/>
+    </bean>
+
+    <!-- 主题 -->
+    <bean id="springTopic" class="org.apache.activemq.command.ActiveMQTopic">
+        <constructor-arg value="SPRING_TOPIC"/>
+    </bean>
+
+    <!-- ==================== 消息监听器容器 ==================== -->
+
+    <!-- XML 方式配置的监听器容器 -->
+    <bean id="queueListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="destination" ref="springQueue"/>
+        <property name="messageListener" ref="queueMessageListener"/>
+        <property name="concurrency" value="3"/>
+        <property name="sessionTransacted" value="false"/>
+    </bean>
+
+    <bean id="topicListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="destination" ref="springTopic"/>
+        <property name="messageListener" ref="topicMessageListener"/>
+        <property name="pubSubDomain" value="true"/>
+        <property name="subscriptionName" value="spring-durable-subscription"/>
+        <property name="subscriptionDurable" value="true"/>
+        <property name="clientId" value="spring-topic-client"/>
+    </bean>
+
+    <!-- ==================== 消息监听器 ==================== -->
+
+    <bean id="queueMessageListener" class="com.example.listener.QueueMessageListener"/>
+
+    <bean id="topicMessageListener" class="com.example.listener.TopicMessageListener"/>
+
+</beans>
