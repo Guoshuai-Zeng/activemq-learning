@@ -10,10 +10,10 @@ activemq-learning/
 ├── docker-compose.yml           # Docker Compose 配置
 ├── .gitignore                   # Git 忽略配置
 ├── docs/                        # 学习文档
-│   ├── 01-introduction.md      # ActiveMQ 简介
-│   ├── 02-installation.md      # 安装与配置
-│   ├── 03-concepts.md          # 核心概念
-│   └── 04-quick-start.md       # 快速开始
+│   ├── 01-简介.md      # ActiveMQ 简介
+│   ├── 02-安装与配置.md      # 安装与配置
+│   ├── 03-核心概念.md          # 核心概念
+│   └── 04-快速开始.md       # 快速开始
 ├── java-demo/                   # Java 原生使用示例
 │   ├── pom.xml                 # Maven 配置
 │   ├── README.md               # 使用说明
@@ -69,10 +69,10 @@ activemq-learning/
 
 ## 学习路线
 
-1. 阅读 `docs/01-introduction.md` - 了解 ActiveMQ 是什么
-2. 阅读 `docs/02-installation.md` - 安装 ActiveMQ
-3. 阅读 `docs/03-concepts.md` - 理解核心概念（队列、主题等）
-4. 阅读 `docs/04-quick-start.md` - 快速开始指南
+1. 阅读 `docs/01-简介.md` - 了解 ActiveMQ 是什么
+2. 阅读 `docs/02-安装与配置.md` - 安装 ActiveMQ
+3. 阅读 `docs/03-核心概念.md` - 理解核心概念（队列、主题等）
+4. 阅读 `docs/04-快速开始.md` - 快速开始指南
 5. 运行 `java-demo/` - 学习原生 Java API 使用
 6. 运行 `spring-demo/` - 学习 Spring 整合
 7. 运行 `springboot-demo/` - 学习 SpringBoot 整合
